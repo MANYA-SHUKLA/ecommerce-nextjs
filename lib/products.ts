@@ -1,6 +1,6 @@
 import { getDb } from './db';
 import { Product } from './types';
-import { ObjectId } from 'mongodb';
+import { ObjectId, Filter } from 'mongodb';
 
 export async function getAllProducts(): Promise<Product[]> {
   const db = await getDb();
@@ -25,7 +25,7 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
 export async function getProductById(id: string): Promise<Product | null> {
   const db = await getDb();
   const product = await db.collection<Product>('products').findOne({ 
-    _id: new ObjectId(id) 
+    _id: new ObjectId(id) as any
   });
   if (!product) return null;
   const { _id, ...rest } = product;
@@ -37,9 +37,8 @@ export async function getProductById(id: string): Promise<Product | null> {
 
 export async function createProduct(product: Omit<Product, '_id' | 'id' | 'lastUpdated'>): Promise<Product> {
   const db = await getDb();
-  const newProduct: Omit<Product, '_id' | 'id'> = {
+  const newProduct = {
     ...product,
-    id: '',
     lastUpdated: new Date().toISOString(),
   };
   const result = await db.collection('products').insertOne(newProduct as any);
@@ -67,7 +66,7 @@ export async function updateProduct(id: string, updates: Partial<Product>): Prom
   
   // Fetch the updated product
   const updatedProduct = await db.collection<Product>('products').findOne({ 
-    _id: new ObjectId(id) 
+    _id: new ObjectId(id) as any
   });
   
   if (!updatedProduct) return null;
